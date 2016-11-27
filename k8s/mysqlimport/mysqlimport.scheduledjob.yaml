@@ -1,0 +1,48 @@
+apiVersion: batch/v2alpha1
+kind: ScheduledJob
+metadata:
+  name: mysqlimport
+spec:
+  schedule: 0 6 * * *
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          nodeSelector:
+            role: mysqlimport
+          containers:
+          - name: mysqlimport
+            image: camil/mysqldump
+            command: ["/import.sh"]
+            env:
+              - name: ALL_DATABASES
+                valueFrom:
+                  configMapKeyRef:
+                    name: mysqlimport
+                    key: all_databases
+              - name: DB_HOST
+                valueFrom:
+                  configMapKeyRef:
+                    name: mysqlimport
+                    key: dbhost
+              - name: DB_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: mysqlimport
+                    key: dbuser
+              - name: DB_PASS
+                valueFrom:
+                  secretKeyRef:
+                    name: mysqlimport
+                    key: dbpass
+            imagePullPolicy: Always
+            volumeMounts:
+              - mountPath: /mysqldump
+                name: mysqldump
+          imagePullSecrets:
+            - name: dockerhubkey
+          volumes:
+            - name: mysqldump
+              hostPath:
+                path: /home/core/mysqldump
+          restartPolicy: OnFailure

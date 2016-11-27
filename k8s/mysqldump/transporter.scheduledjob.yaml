@@ -1,0 +1,44 @@
+apiVersion: batch/v2alpha1
+kind: ScheduledJob
+metadata:
+  name: transporter
+spec:
+  schedule: 0 5 * * *
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          nodeSelector:
+            role: mysqldump
+          containers:
+          - name: transporter
+            image: camil/mysqldump
+            command: ["/bin/bash", "-c"]
+            args:
+              - ssh-keyscan -t rsa $TARGET_HOST > ~/.ssh/known_hosts && ssh -i /root/.ssh/private/id_rsa $LINUX_USER@$TARGET_HOST 'mkdir mysqldump || true' && scp -i /root/.ssh/private/id_rsa /mysqldump/* $LINUX_USER@$TARGET_HOST:/home/$LINUX_USER/mysqldump
+            env:
+              - name: TARGET_HOST
+                valueFrom:
+                  configMapKeyRef:
+                    name: transporter
+                    key: target.host
+              - name: LINUX_USER
+                valueFrom:
+                  configMapKeyRef:
+                    name: transporter
+                    key: linux.user
+            imagePullPolicy: Always
+            volumeMounts:
+              - mountPath: /mysqldump
+                name: mysqldump
+              - mountPath: /root/.ssh/private
+                name: transporter-key
+          volumes:
+            - name: mysqldump
+              hostPath:
+                path: /home/core/mysqldump
+            - name: transporter-key
+              secret:
+                secretName: transporter-key
+                defaultMode: 256
+          restartPolicy: OnFailure

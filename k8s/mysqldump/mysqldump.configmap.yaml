@@ -1,0 +1,10 @@
+apiVersion: v1
+data:
+  dbhost: db_host
+  db1: db_one
+  db2: db_two
+  dbn: db_n
+  all_databases: "true"
+kind: ConfigMap
+metadata:
+  name: mysqldump

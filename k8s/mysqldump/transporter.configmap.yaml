@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  target.host: 'hostname_or_ip_address'
+  linux.user: 'linux_user'
+kind: ConfigMap
+metadata:
+  name: transporter

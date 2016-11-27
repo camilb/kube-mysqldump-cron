@@ -1,0 +1,44 @@
+apiVersion: batch/v2alpha1
+kind: ScheduledJob
+metadata:
+  name: mysqldump
+spec:
+  schedule: 0 4 * * *
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          nodeSelector:
+            role: mysqldump
+          containers:
+          - name: mysqldump
+            image: camil/mysqldump
+            env:
+              - name: DB_NAME
+                valueFrom:
+                  configMapKeyRef:
+                    name: mysqldump
+                    key: db1
+              - name: DB_HOST
+                valueFrom:
+                  configMapKeyRef:
+                    name: mysqldump
+                    key: dbhost
+              - name: DB_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: mysqldump
+                    key: dbuser
+              - name: DB_PASS
+                valueFrom:
+                  secretKeyRef:
+                    name: mysqldump
+                    key: dbpass
+            volumeMounts:
+              - mountPath: /mysqldump
+                name: mysqldump
+          volumes:
+            - name: mysqldump
+              hostPath:
+                path: /home/core/mysqldump
+          restartPolicy: OnFailure

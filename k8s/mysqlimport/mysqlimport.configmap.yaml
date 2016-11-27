@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  dbhost: 'hostname_or_ip_address'
+  all_databases: "true"
+kind: ConfigMap
+metadata:
+  name: mysqlimport
